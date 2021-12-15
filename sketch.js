@@ -20,7 +20,9 @@ let classifier;
 
 // Model URL
 // let imageModelURL = 'https://teachablemachine.withgoogle.com/models/XPQoquOqG/';
+// Link to the model downloaded from Teachable Machine
 let imageModelURL = 'tm-my-image-model-3/';
+
 
 // Video
 let video;
@@ -29,11 +31,13 @@ let flippedVideo;
 let label = "";
 let prevLabel ="";
 
+// Variables to control the background movement
 let p1 = 0;
 let p2 = 640;
 
 // Load the model first
 function preload() {
+  // Loading the classifier
   classifier = ml5.imageClassifier(imageModelURL + 'model.json');
   pikachu = loadImage('images/pikachu.png');
   enemy = loadImage('images/enemy.png')
@@ -49,18 +53,20 @@ function setup() {
   // an ID of "left"
   canvasMain.parent("#center");
   // Create the video
+  // Getting live video from the user
   video = createCapture(VIDEO);
   video.size(320, 240);
   video.hide();
 
   flippedVideo = ml5.flipImage(video);
-  // Start classifyingww
+  // Start classifyingw
   classifyVideo();
 
-
+  // Creating objects of the user and obstacles class
   player = new Player(35,425,50);
   box = new Obstacle(450,425,70,3);
   box2 = new Obstacle(450,425,70,2);
+  // Game State Variables
   gameOver = false;
   gameBegin = false;
   stop = false;
@@ -68,9 +74,11 @@ function setup() {
 }
 
 function draw() {
+  // Checking that the 'Fingers' are shown for the first time, in order to avoid the timer being continously reset
   if(label!=prevLabel && label == "FINGERS"){
     stopTimer = 6;
   }
+  // Side by side bg images
   image(bgImage, p1, 0);
   image(bgImage, p2, 0);
 
@@ -99,15 +107,17 @@ function draw() {
   textAlign(CENTER);
   console.log(label)
   fill(0);
+  // Displaying what the current gesture is
   text("Gesture: " + label, 578,25);
 
-
+  // Begin the game only when a gesture is detected. i.e the camera is loaded
   if(label != ""){
     gameBegin = true;
   }
 
   // console.log(gameOver);
   if(gameBegin == true){
+    // Only display everything is the game is not over yet.
     if(gameOver == false){
       player.display();
       player.move();
@@ -136,7 +146,7 @@ function draw() {
   rect(0,floorY,width,height);
   prevLabel = label;
 }
-
+// Class for the enemy pokemons
 class Obstacle{
   constructor(x,y,size, speed){
     this.x = x;
@@ -145,6 +155,7 @@ class Obstacle{
     this.speed = speed;
   }
   display(){
+    // Displaying the enemy
     fill(120);
     imageMode(CENTER);
     image(enemy,this.x,this.y-5, this.size, this.size )
@@ -163,6 +174,7 @@ class Obstacle{
     // ellipse(this.Left, this.y, 5,5)
   }
   move(){
+    // Moving the enemy
     this.x-= this.speed;
 
     if(this.x <= 0){
@@ -172,6 +184,7 @@ class Obstacle{
   }
 
   collision(){
+    // Detecting collision with the enemy
     if (!(player.Top > this.Bottom || player.Left > this.Right || player.Right < this.Left || player.Bottom < this.Top)){
       player.health -=10;
       this.x = 600;
@@ -182,7 +195,7 @@ class Obstacle{
   }
 
 }
-
+// Pikachu's class
 class Player{
   constructor(x,y,size){
     this.x = x;
@@ -206,9 +219,10 @@ class Player{
     if (keyIsDown(68)) {
       this.x  += speed;
     }
-
+    // if the user shows the gesture of 'Fingers'
     if (label == "FINGERS") {
       stop = true;
+      // To make sure the user starts decending when paused during jump, and doesnt go up again
       this.jumpPower = this.gravity;
     }
     else{
@@ -240,6 +254,7 @@ class Player{
       }
     }
     else{
+      // To reduce the timer when the game is in pause mode and end the game if the timer reaches 0
       if(frameCount % 30==0){
         stopTimer -=1;
       }
@@ -249,6 +264,7 @@ class Player{
       text("Timer: " + stopTimer, 578, 65)
     }
 
+    // Ensuring the use doesnt go below the screen
     if((xPos + this.size/2)>width){
       this.x =  width -  this.size/2;
     }
